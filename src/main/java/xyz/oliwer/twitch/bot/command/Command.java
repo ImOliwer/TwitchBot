@@ -1,7 +1,9 @@
 package xyz.oliwer.twitch.bot.command;
 
+import org.jetbrains.annotations.NotNull;
 import xyz.oliwer.twitch.bot.structure.BotClient;
 import xyz.oliwer.twitch.bot.structure.ExtractedUser;
+import xyz.oliwer.twitch.bot.util.ChildContainer;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -11,7 +13,7 @@ import java.util.function.Consumer;
  *
  * @author Oliwer - https://www.github.com/ImOliwer
  */
-public abstract class Command {
+public abstract class Command implements ChildContainer<Command> {
   /**
    * {@link Byte} this constant represents the command prefix (33 = '!').
    */
@@ -33,10 +35,19 @@ public abstract class Command {
    * Note: This method is only invoked after all requirements are met.
    *
    * @param user {@link ExtractedUser} whom executed this command.
-   * @param client {@link BotClient} the client - from where this command was executed.
+   * @param client {@link BotClient} the client from where this command was executed.
    * @param arguments {@link String} array of arguments executed with the command.
    */
   public abstract void perform(ExtractedUser user, BotClient client, String[] arguments);
+
+  /**
+   * This method is invoked only when an invalid alias of a child is executed.
+   *
+   * @param user {@link ExtractedUser} the user who executed the command.
+   * @param client {@link BotClient} the client from where this command was executed.
+   * @param usedAlias {@link String} alias of unknown child which was used during execution.
+   */
+  public void onInvalidChild(ExtractedUser user, BotClient client, String usedAlias) {}
 
   /**
    * Get the aliases of this command.
@@ -55,11 +66,11 @@ public abstract class Command {
   }
 
   /**
-   * Get a copy of the children for this command.
-   *
-   * @return {@link Set<Command>}
+   * @see ChildContainer#children()
+   * @return {@link Set<Command>} copy of current children.
    */
-  public Set<Command> children() {
+  @Override
+  public @NotNull Set<Command> children() {
     return new HashSet<>(children);
   }
 

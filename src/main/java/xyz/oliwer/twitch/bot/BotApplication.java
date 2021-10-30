@@ -1,6 +1,7 @@
 package xyz.oliwer.twitch.bot;
 
 import xyz.oliwer.twitch.bot.command.CommandController;
+import xyz.oliwer.twitch.bot.command.points.CommandPoints;
 import xyz.oliwer.twitch.bot.structure.BotClient;
 import xyz.oliwer.twitch.bot.subscribers.CommandSubscriber;
 
@@ -21,6 +22,7 @@ public final class BotApplication {
 
     // controller
     final CommandController controller = new CommandController();
+    controller.register(new CommandPoints());
 
     // client
     final BotClient client = new BotClient(properties);

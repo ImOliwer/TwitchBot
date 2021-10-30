@@ -1,15 +1,12 @@
 package xyz.oliwer.twitch.bot.command;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import xyz.oliwer.twitch.bot.structure.BotClient;
 import xyz.oliwer.twitch.bot.structure.ExtractedUser;
+import xyz.oliwer.twitch.bot.util.ChildContainer;
 import xyz.oliwer.twitch.bot.util.Controller;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 import static xyz.oliwer.twitch.bot.command.Command.Requirement;
 
@@ -18,24 +15,18 @@ import static xyz.oliwer.twitch.bot.command.Command.Requirement;
  *
  * @author Oliwer - https://www.github.com/ImOliwer
  */
-public final class CommandController implements Controller<Command> {
+public final class CommandController implements Controller<Command>, ChildContainer<Command> {
   /**
-   * {@link Set<Command>} this property represents all commands registered to this controller.
+   * {@link Perform} this property represents the performer for commands.
    */
-  private final Set<Command> commands = new HashSet<>();
+  public static final Perform PERFORMER = (parent, commandAlias, arguments, user, client) -> {
+    if (parent == null || commandAlias == null || arguments == null || user == null || client == null) {
+      throw new NullPointerException("all of parent, commandAlias, arguments, user and client must NOT be null");
+    }
 
-  /**
-   * Try to match command and perform by passed string & event.
-   *
-   * @param parent {@link Command} the parent to fetch children from - null if none.
-   * @param commandAlias {@link String} alias to attempt execution of.
-   * @param arguments {@link String} array of arguments from performed command.
-   * @param user {@link ExtractedUser} the user who executed this command.
-   * @param client {@link BotClient} the bot client - where said command was called from originally.
-   */
-  public void tryPerform(@Nullable Command parent, String commandAlias, String[] arguments, ExtractedUser user, BotClient client) {
     final String transformed = commandAlias.toLowerCase(Locale.ROOT);
-    final Set<Command> searchThrough = parent != null ? parent.children() : this.commands;
+    final Set<Command> searchThrough = (Set<Command>) parent.children();
+    boolean failedToMatchAll = true;
 
     for (Command command : searchThrough) {
       boolean matches = false;
@@ -55,6 +46,7 @@ public final class CommandController implements Controller<Command> {
 
       final Set<Requirement> requirements = command.requirements();
       boolean passedRequirements = true;
+      failedToMatchAll = false;
 
       for (Requirement requirement : requirements) {
         if (requirement.attempt(user)) {
@@ -72,6 +64,28 @@ public final class CommandController implements Controller<Command> {
       command.perform(user, client, exactArguments);
       break;
     }
+
+    if (failedToMatchAll && parent instanceof Command) {
+      ((Command) parent).onInvalidChild(user, client, transformed);
+    }
+  };
+
+  /**
+   * {@link Set<Command>} this property represents all commands registered to this controller.
+   */
+  private final Set<Command> commands = new HashSet<>();
+
+  /**
+   * @see CommandController#PERFORMER
+   */
+  public void tryPerform(
+    ChildContainer<Command> parent,
+    String commandAlias,
+    String[] arguments,
+    ExtractedUser user,
+    BotClient client
+  ) {
+    PERFORMER.commence(parent == null ? this : parent, commandAlias, arguments, user, client);
   }
 
   /**
@@ -103,9 +117,38 @@ public final class CommandController implements Controller<Command> {
   /**
    * Get a copy of all commands registered to this controller.
    *
-   * @return {@link Set<Command>}
+   * @return {@link Set<Command>} copy of current children.
    */
   public Set<Command> commands() {
     return new HashSet<>(commands);
+  }
+
+  /**
+   * @see ChildContainer#children()
+   * @return {@link Set<Command>}
+   */
+  @Override
+  public @NotNull Collection<Command> children() {
+    return new HashSet<>(commands);
+  }
+
+  /**
+   * This functional interface represents a single method
+   * used to commence the execution of a command.
+   *
+   * @author Oliwer - https://www.github.com/ImOliwer
+   */
+  @FunctionalInterface
+  public interface Perform {
+    /**
+     * Commence the execution.
+     */
+    void commence(
+      @NotNull ChildContainer<Command> parent,
+      @NotNull String commandAlias,
+      @NotNull String[] arguments,
+      @NotNull ExtractedUser user,
+      @NotNull BotClient client
+    );
   }
 }
