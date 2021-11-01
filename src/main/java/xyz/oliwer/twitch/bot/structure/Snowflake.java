@@ -5,11 +5,11 @@ package xyz.oliwer.twitch.bot.structure;
  *
  * @author Oliwer - https://www.github.com/ImOliwer
  */
-public interface Snowflake {
+public interface Snowflake<Type> {
   /**
    * Get the identifier of this snowflake.
    *
-   * @return {@link Long}
+   * @return {@link Type}
    */
-  long id();
+  Type id();
 }

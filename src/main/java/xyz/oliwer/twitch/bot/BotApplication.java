@@ -24,7 +24,8 @@ public final class BotApplication {
 
     // client
     final BotClient client = new BotClient(properties);
-    client.connect("ImOliwer");
+    client.connect("imoliwer");
+    client.connect("svhmi_");
     client.subscribe(new CommandSubscriber(controller, client));
   }
 }

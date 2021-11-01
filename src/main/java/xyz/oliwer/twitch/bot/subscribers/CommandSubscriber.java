@@ -47,6 +47,13 @@ public record CommandSubscriber(
     final String command = arguments[0].substring(1);
 
     // attempt to perform command by alias
-    controller.tryPerform(null, command, arguments, new ExtractedUser(event), this.client);
+    controller.tryPerform(
+      null,
+      event.getChannel().getName(),
+      command,
+      arguments,
+      new ExtractedUser(event),
+      this.client
+    );
   }
 }

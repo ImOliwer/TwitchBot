@@ -11,6 +11,8 @@ import java.util.function.Consumer;
 /**
  * This abstraction layer represents a chat (primary and sub) command.
  *
+ * TODO: Implement a way to define the owner of this command - i.e "system" or "user" for global and private commands.
+ *
  * @author Oliwer - https://www.github.com/ImOliwer
  */
 public abstract class Command implements ChildContainer<Command> {
@@ -36,9 +38,17 @@ public abstract class Command implements ChildContainer<Command> {
    *
    * @param user {@link ExtractedUser} whom executed this command.
    * @param client {@link BotClient} the client from where this command was executed.
+   * @param channel {@link String} name of the channel this command was executed in.
    * @param arguments {@link String} array of arguments executed with the command.
    */
-  public abstract void perform(ExtractedUser user, BotClient client, String[] arguments);
+  public abstract void perform(ExtractedUser user, BotClient client, String channel, String[] arguments);
+
+  /**
+   * Get the aliases of this command.
+   *
+   * @return {@link String}
+   */
+  public abstract String[] getAliases();
 
   /**
    * This method is invoked only when an invalid alias of a child is executed.
@@ -50,11 +60,13 @@ public abstract class Command implements ChildContainer<Command> {
   public void onInvalidChild(ExtractedUser user, BotClient client, String usedAlias) {}
 
   /**
-   * Get the aliases of this command.
+   * The private owner of this command (null if global).
    *
    * @return {@link String}
    */
-  public abstract String[] getAliases();
+  public String representative() {
+    return null;
+  }
 
   /**
    * Generate a new meta builder.

@@ -19,7 +19,7 @@ public final class CommandController implements Controller<Command>, ChildContai
   /**
    * {@link Perform} this property represents the performer for commands.
    */
-  public static final Perform PERFORMER = (parent, commandAlias, arguments, user, client) -> {
+  public static final Perform PERFORMER = (parent, channel, commandAlias, arguments, user, client) -> {
     if (parent == null || commandAlias == null || arguments == null || user == null || client == null) {
       throw new NullPointerException("all of parent, commandAlias, arguments, user and client must NOT be null");
     }
@@ -30,6 +30,11 @@ public final class CommandController implements Controller<Command>, ChildContai
 
     for (Command command : searchThrough) {
       boolean matches = false;
+
+      final String representative = command.representative();
+      if (representative != null && !representative.equals(channel)) {
+        continue;
+      }
 
       final String[] aliases = command.getAliases();
       for (String alias : aliases) {
@@ -61,7 +66,7 @@ public final class CommandController implements Controller<Command>, ChildContai
       }
 
       final String[] exactArguments = Arrays.copyOfRange(arguments, 1, arguments.length);
-      command.perform(user, client, exactArguments);
+      command.perform(user, client, channel, exactArguments);
       break;
     }
 
@@ -80,12 +85,13 @@ public final class CommandController implements Controller<Command>, ChildContai
    */
   public void tryPerform(
     ChildContainer<Command> parent,
+    String channel,
     String commandAlias,
     String[] arguments,
     ExtractedUser user,
     BotClient client
   ) {
-    PERFORMER.commence(parent == null ? this : parent, commandAlias, arguments, user, client);
+    PERFORMER.commence(parent == null ? this : parent, channel, commandAlias, arguments, user, client);
   }
 
   /**
@@ -145,6 +151,7 @@ public final class CommandController implements Controller<Command>, ChildContai
      */
     void commence(
       @NotNull ChildContainer<Command> parent,
+      @NotNull String channel,
       @NotNull String commandAlias,
       @NotNull String[] arguments,
       @NotNull ExtractedUser user,

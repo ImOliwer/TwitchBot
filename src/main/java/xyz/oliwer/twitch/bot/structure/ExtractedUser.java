@@ -13,16 +13,16 @@ import java.util.Set;
  *
  * @author Oliwer - https://www.github.com/ImOliwer
  */
-public final class ExtractedUser {
+public final class ExtractedUser implements Snowflake<String> {
   /**
    * {@link String} the identifier of this user.
    */
-  public final String id;
+  private final String id;
 
   /**
    * {@link String} the name of this user.
    */
-  public final String name;
+  private final String name;
 
   /**
    * {@link Set<CommandPermission>} set of permissions.
@@ -76,5 +76,22 @@ public final class ExtractedUser {
    */
   public Set<CommandPermission> permissions() {
     return new HashSet<>(this.permissions);
+  }
+
+  /**
+   * @see Snowflake#id()
+   */
+  @Override
+  public String id() {
+    return this.id;
+  }
+
+  /**
+   * Get the name of this user.
+   *
+   * @return {@link String}
+   */
+  public String getName() {
+    return this.name;
   }
 }
