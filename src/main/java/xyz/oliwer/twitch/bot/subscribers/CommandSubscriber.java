@@ -6,7 +6,6 @@ import xyz.oliwer.twitch.bot.command.CommandController;
 import xyz.oliwer.twitch.bot.structure.BotClient;
 import xyz.oliwer.twitch.bot.structure.EventSubscriber;
 import xyz.oliwer.twitch.bot.structure.ExtractedUser;
-import xyz.oliwer.twitch.bot.util.annotation.SilentUse;
 
 import static xyz.oliwer.twitch.bot.command.Command.PREFIX;
 
@@ -15,7 +14,6 @@ import static xyz.oliwer.twitch.bot.command.Command.PREFIX;
  *
  * @author Oliwer - https://www.github.com/ImOliwer
  */
-@SilentUse(by = {BotClient.class})
 public record CommandSubscriber(
   CommandController controller,
   BotClient client
